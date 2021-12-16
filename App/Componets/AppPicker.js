@@ -1,23 +1,55 @@
-import React from 'react'
-import { View, Text ,StyleSheet,Platform} from 'react-native'
+import React,{useState}from 'react'
+import { View, Button,Text ,StyleSheet,Platform} from 'react-native'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { TextInput } from 'react-native'
-import { alignPropType } from 'react-bootstrap/esm/DropdownMenu'
-export default function AppPicker({placeholder,icon,...otherProps}) {
+import { TouchableWithoutFeedback } from 'react-native'
+import { Modal,FlatList } from 'react-native'
+import Screen from  './Screen'
+import PickerItems from  './PickerItems'
+export default function AppPicker({placeholder,icon,items,
+    PickerItemComponent=PickerItems,
+    numberOfColumns=1,
+    onSelectItem,selectedItem,...otherProps}) {
+    const [modalVisible,setModalVisible]=useState(false)
     return (
+        <React.Fragment>
+        <TouchableWithoutFeedback onPress={()=>setModalVisible(true)}>
         <View style={styles.container}>
          {icon &&   <MaterialCommunityIcons  
            style={styles.icon}
-           size={40}
+           size={20}
            color="#6e6969"
             name={icon} />}
-            <Text style={styles.text}>{placeholder}</Text>
+            {selectedItem?<Text  style={styles.text}>{selectedItem.label}</Text>:<Text style={styles.placeholder}>{placeholder}</Text>}
+            
             <MaterialCommunityIcons  
-           style={styles.icon}
-           size={40}
+           size={20}
            color="#6e6969"
-            name>
+            name="chevron-down"/>
         </View>
+        </TouchableWithoutFeedback>
+        <Modal visible={modalVisible} animationType="slide">
+            <Screen>
+            <Button title="close" onPress={()=>setModalVisible(false)}/>
+            <FlatList
+            numColumns={numberOfColumns}
+            data={items}
+            keyExtractor={item=>item.value.toString()}
+            renderItem={({item})=>
+                            <PickerItemComponent
+                            item={item}
+                            label={item.label}
+                            onPress={()=>{
+                                setModalVisible(false)
+                                onSelectItem(item)
+                            }}
+                            />
+        } 
+            />
+            </Screen>
+           
+        </Modal>
+        </React.Fragment>//or use <> </> on dis line
     )
 }
 
@@ -31,16 +63,18 @@ const styles = StyleSheet.create({
             padding:15
         },
         text:{
-             flex:1,
-            fontFamily:Platform.OS==="android"?"Roboto":"Avenir",
-            alignItems:"center",
-            justifyContent:"center",
+            flex:1,
+            color:"black",
+            // fontSize:18,
+            fontFamily:Platform.OS==="android"?"Roboto":"Avenir"
 
         },
 
         icon:{
-            marginRight:10,
-            alignItems:"center",
-            justifyContent:"center",
+            marginRight:10
+        },
+        placeholder:{
+            color:"black",
+            flex:1
         }
 })
